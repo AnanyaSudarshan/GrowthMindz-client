@@ -1,0 +1,34 @@
+.curriculum { background: #f8fafc; }
+
+.curriculum h2 { font-size: 32px; margin-bottom: 16px; }
+
+.topics {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.topic {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  color: #0f172a;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+}
+
+@media (min-width: 640px) {
+  .curriculum h2 { font-size: 40px; }
+  .topics { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 980px) {
+  .topics { grid-template-columns: repeat(3, 1fr); }
+}
+
+
+
+

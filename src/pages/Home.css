@@ -1,0 +1,45 @@
+.hero {
+  padding-top: 64px; /* navbar height */
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.8)), 
+              url('https://tse1.mm.bing.net/th/id/OIP.sh3b0tVfhCt4RiS5fAzliQHaFj?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero__content {
+  padding: 72px 16px 56px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 36px;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  color: #0f172a;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #334155;
+  margin: 0 auto 20px;
+  max-width: 700px;
+}
+
+.hero__ctas { display: flex; gap: 12px; justify-content: center; }
+
+@media (min-width: 640px) {
+  .hero__content { padding: 104px 16px 72px; }
+  .hero h1 { font-size: 48px; }
+  .hero p { font-size: 19px; }
+}
+
+.footer {
+  background: #0b1220;
+  color: #cbd5e1;
+  padding: 28px 16px;
+}
+
+.footer p { margin: 0; font-size: 14px; }
+
+

@@ -89,8 +89,9 @@ function Signup() {
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       // For demo purposes, simulate successful signup
-      alert('Account created successfully! (Demo mode)')
-      // In real app, redirect to dashboard or email verification
+      alert('Account created successfully!')
+      // Redirect to login page after successful signup
+      navigate('/login')
     } catch (error) {
       setErrors({ general: 'An error occurred. Please try again.' })
     } finally {

@@ -60,7 +60,7 @@ function Login() {
       
       // For demo purposes, check for demo credentials
       if (formData.email === 'demo@example.com' && formData.password === 'password') {
-        alert('Login successful! (Demo mode)')
+        alert('Login successful!')
         // In real app, redirect to dashboard
       } else {
         setErrors({ general: 'Invalid email or password' })
@@ -74,7 +74,7 @@ function Login() {
 
   const handleGoogleSuccess = (user) => {
     setIsGoogleLoading(false)
-    alert(`Welcome back, ${user.name}! (Demo mode)`)
+    alert(`Welcome back, ${user.name}!`)
     // In real app, redirect to dashboard
   }
 

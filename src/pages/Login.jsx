@@ -1,93 +1,105 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import GoogleOAuth from '../components/GoogleOAuth'
-import './Auth.css'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import GoogleOAuth from "../components/GoogleOAuth";
+import "./Auth.css";
 
 function Login() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
+      [name]: value,
+    }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: "",
+      }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
-    
+    const newErrors = {};
+
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = "Please enter a valid email address";
     }
-    
+
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = "Password is required";
     }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setIsLoading(true)
-    
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // For demo purposes, check for demo credentials
-      if (formData.email === 'demo@example.com' && formData.password === 'password') {
-        alert('Login successful!')
-        // In real app, redirect to dashboard
-      } else {
-        setErrors({ general: 'Invalid email or password' })
+      const response = await axios.post("http://localhost:5000/api/login", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (response.data.message === "Login successful") {
+        alert("Login successful!");
+        // Store user data in localStorage or context
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        // Redirect to dashboard or home page
+        navigate("/");
       }
     } catch (error) {
-      setErrors({ general: 'An error occurred. Please try again.' })
+      console.error("Login error:", error);
+      if (error.response?.data?.message) {
+        setErrors({ general: error.response.data.message });
+      } else {
+        setErrors({ general: "An error occurred. Please try again." });
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSuccess = (user) => {
-    setIsGoogleLoading(false)
-    alert(`Welcome back, ${user.name}!`)
+    setIsGoogleLoading(false);
+    alert(`Welcome back, ${user.name}!`);
     // In real app, redirect to dashboard
-  }
+  };
 
   const handleGoogleError = (error) => {
-    setIsGoogleLoading(false)
-    setErrors({ general: 'Google sign-in failed. Please try again.' })
-  }
+    setIsGoogleLoading(false);
+    setErrors({ general: "Google sign-in failed. Please try again." });
+  };
 
   return (
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <div className="auth-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <div
+            className="auth-logo"
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          >
             <div className="logo-icon">🧠</div>
             <h1>GrowthMindz</h1>
           </div>
@@ -97,9 +109,7 @@ function Login() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
+            <div className="error-message general-error">{errors.general}</div>
           )}
 
           <div className="form-group">
@@ -110,7 +120,7 @@ function Login() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              className={errors.email ? "error" : ""}
               placeholder="Enter your email"
               disabled={isLoading}
             />
@@ -127,7 +137,7 @@ function Login() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              className={errors.password ? "error" : ""}
               placeholder="Enter your password"
               disabled={isLoading}
             />
@@ -142,8 +152,8 @@ function Login() {
             </Link>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn--primary btn--full"
             disabled={isLoading}
           >
@@ -153,7 +163,7 @@ function Login() {
                 Signing in...
               </>
             ) : (
-              'Sign in'
+              "Sign in"
             )}
           </button>
 
@@ -172,7 +182,7 @@ function Login() {
 
           <div className="auth-footer">
             <p>
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link to="/signup" className="auth-link">
                 Sign up for free
               </Link>
@@ -181,7 +191,7 @@ function Login() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

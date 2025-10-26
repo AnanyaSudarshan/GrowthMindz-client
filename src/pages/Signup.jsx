@@ -1,120 +1,142 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import GoogleOAuth from '../components/GoogleOAuth'
-import './Auth.css'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import GoogleOAuth from "../components/GoogleOAuth";
+import "./Auth.css";
 
 function Signup() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    agreeToTerms: false
-  })
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false,
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+      [name]: type === "checkbox" ? checked : value,
+    }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: "",
+      }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
-    
+    const newErrors = {};
+
     // First name validation
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+      newErrors.firstName = "First name is required";
     }
-    
+
     // Last name validation
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
+      newErrors.lastName = "Last name is required";
     }
-    
+
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+      newErrors.email = "Please enter a valid email address";
     }
-    
+
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = "Password must be at least 8 characters";
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+      newErrors.password =
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number";
     }
-    
+
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = "Passwords do not match";
     }
-    
+
     // Terms agreement validation
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'You must agree to the terms and conditions'
+      newErrors.agreeToTerms = "You must agree to the terms and conditions";
     }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setIsLoading(true)
-    
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // For demo purposes, simulate successful signup
-      alert('Account created successfully!')
-      // Redirect to login page after successful signup
-      navigate('/login')
+      // Prepare data with correct field names for backend
+      const signupData = {
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        confirm_password: formData.confirmPassword,
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/api/signup",
+        signupData
+      );
+
+      if (response.data.message) {
+        alert("Signup successful! Please login to continue.");
+        navigate("/login");
+      }
     } catch (error) {
-      setErrors({ general: 'An error occurred. Please try again.' })
+      console.error("Signup error:", error);
+      if (error.response?.data?.message) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        alert("Signup failed. Please try again.");
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleSuccess = (user) => {
-    setIsGoogleLoading(false)
-    alert(`Welcome to GrowthMindz, ${user.name}! (Demo mode)`)
+    setIsGoogleLoading(false);
+    alert(`Welcome to GrowthMindz, ${user.name}! (Demo mode)`);
     // In real app, redirect to dashboard
-  }
+  };
 
   const handleGoogleError = (error) => {
-    setIsGoogleLoading(false)
-    setErrors({ general: 'Google sign-up failed. Please try again.' })
-  }
+    setIsGoogleLoading(false);
+    setErrors({ general: "Google sign-up failed. Please try again." });
+  };
 
   return (
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <div className="auth-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <div
+            className="auth-logo"
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          >
             <div className="logo-icon">🧠</div>
             <h1>GrowthMindz</h1>
           </div>
@@ -124,9 +146,7 @@ function Signup() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
+            <div className="error-message general-error">{errors.general}</div>
           )}
 
           <div className="form-row">
@@ -138,7 +158,7 @@ function Signup() {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className={errors.firstName ? 'error' : ''}
+                className={errors.firstName ? "error" : ""}
                 placeholder="Enter your first name"
                 disabled={isLoading}
               />
@@ -155,7 +175,7 @@ function Signup() {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className={errors.lastName ? 'error' : ''}
+                className={errors.lastName ? "error" : ""}
                 placeholder="Enter your last name"
                 disabled={isLoading}
               />
@@ -173,7 +193,7 @@ function Signup() {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              className={errors.email ? "error" : ""}
               placeholder="Enter your email"
               disabled={isLoading}
             />
@@ -190,7 +210,7 @@ function Signup() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              className={errors.password ? "error" : ""}
               placeholder="Create a strong password"
               disabled={isLoading}
             />
@@ -207,7 +227,7 @@ function Signup() {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={errors.confirmPassword ? 'error' : ''}
+              className={errors.confirmPassword ? "error" : ""}
               placeholder="Confirm your password"
               disabled={isLoading}
             />
@@ -225,12 +245,11 @@ function Signup() {
                 onChange={handleChange}
                 disabled={isLoading}
               />
-              <span className="checkmark"></span>
-              I agree to the{' '}
+              <span className="checkmark"></span>I agree to the{" "}
               <Link to="/terms" className="terms-link">
                 Terms of Service
-              </Link>{' '}
-              and{' '}
+              </Link>{" "}
+              and{" "}
               <Link to="/privacy" className="terms-link">
                 Privacy Policy
               </Link>
@@ -240,8 +259,8 @@ function Signup() {
             )}
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn--primary btn--full"
             disabled={isLoading}
           >
@@ -251,7 +270,7 @@ function Signup() {
                 Creating account...
               </>
             ) : (
-              'Create account'
+              "Create account"
             )}
           </button>
 
@@ -270,7 +289,7 @@ function Signup() {
 
           <div className="auth-footer">
             <p>
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link to="/login" className="auth-link">
                 Sign in
               </Link>
@@ -279,7 +298,7 @@ function Signup() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default Signup
+export default Signup;

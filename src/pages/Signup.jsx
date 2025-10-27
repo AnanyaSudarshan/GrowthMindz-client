@@ -102,8 +102,10 @@ function Signup() {
       );
 
       if (response.data.message) {
-        alert("Signup successful! Please login to continue.");
-        navigate("/login");
+        alert("Signup successful! Welcome to GrowthMindz!");
+        // Store user data from server response in localStorage
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Signup error:", error);

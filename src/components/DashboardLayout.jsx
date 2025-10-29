@@ -1,18 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./DashboardLayout.css";
 
-function DashboardLayout({ children }) {
+const DashboardLayout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [coursesDropdownOpen, setCoursesDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const [coursesDropdown, setCoursesDropdown] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  useEffect(() => {
+    // Get user data from localStorage
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    } else {
+      // Redirect to login if no user data
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    // Close mobile menu when route changes
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const toggleCoursesDropdown = () => {
+    setCoursesDropdownOpen(!coursesDropdownOpen);
   };
 
   const isActive = (path) => {
@@ -21,232 +45,153 @@ function DashboardLayout({ children }) {
     return false;
   };
 
+  const menuItems = [
+    { path: "/dashboard", icon: "🏠", label: "Dashboard" },
+    { path: "/dashboard/profile", icon: "👤", label: "Profile" },
+    { path: "/dashboard/settings", icon: "⚙️", label: "Settings" },
+    { path: "/dashboard/learning", icon: "📚", label: "My Learning" },
+    { path: "/dashboard/progress", icon: "📊", label: "Progress" },
+  ];
+
+  const courseCategories = [
+    { path: "/dashboard/courses/nism", label: "NISM Series" },
+    { path: "/dashboard/courses/forex", label: "Forex Market" },
+    { path: "/dashboard/courses/stock", label: "Stock Market" },
+  ];
+
+  const getPageTitle = () => {
+    const path = location.pathname;
+    if (path === "/dashboard") return "Dashboard";
+    if (path.includes("/profile")) return "Profile";
+    if (path.includes("/settings")) return "Settings";
+    if (path.includes("/learning")) return "My Learning";
+    if (path.includes("/progress")) return "Progress";
+    if (path.includes("/courses")) {
+      if (path.includes("/nism")) return "NISM Series";
+      if (path.includes("/forex")) return "Forex Market";
+      if (path.includes("/stock")) return "Stock Market";
+      return "Courses";
+    }
+    return "Dashboard";
+  };
+
+  if (!user) {
+    return null; // Will redirect to login
+  }
+
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-layout">
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? "open" : "closed"} ${mobileMenuOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <div className="logo">
             <span className="logo-icon">🧠</span>
             <span className="logo-text">GrowthMindz</span>
           </div>
+          <button className="sidebar-toggle" onClick={toggleSidebar}>
+            {isSidebarOpen ? "←" : "→"}
+          </button>
         </div>
 
         <nav className="sidebar-nav">
-          <Link
-            to="/dashboard"
-            className={`nav-item ${isActive("/dashboard") ? "active" : ""}`}
-          >
-            <span className="nav-icon">🏠</span>
-            <span className="nav-text">Dashboard</span>
-          </Link>
-
-          <Link
-            to="/dashboard/profile"
-            className={`nav-item ${isActive("/dashboard/profile") ? "active" : ""}`}
-          >
-            <span className="nav-icon">👤</span>
-            <span className="nav-text">Profile</span>
-          </Link>
-
-          <Link
-            to="/dashboard/settings"
-            className={`nav-item ${isActive("/dashboard/settings") ? "active" : ""}`}
-          >
-            <span className="nav-icon">⚙️</span>
-            <span className="nav-text">Settings</span>
-          </Link>
-
-          <Link
-            to="/dashboard/learning"
-            className={`nav-item ${isActive("/dashboard/learning") ? "active" : ""}`}
-          >
-            <span className="nav-icon">📚</span>
-            <span className="nav-text">My Learning</span>
-          </Link>
-
-          <Link
-            to="/dashboard/progress"
-            className={`nav-item ${isActive("/dashboard/progress") ? "active" : ""}`}
-          >
-            <span className="nav-icon">📊</span>
-            <span className="nav-text">Progress</span>
-          </Link>
-
-          {/* Courses Dropdown */}
-          <div className="nav-item-dropdown">
-            <div
-              className={`nav-item nav-item-toggle ${
-                isActive("/dashboard/courses") ? "active" : ""
-              }`}
-              onClick={() => setCoursesDropdown(!coursesDropdown)}
-            >
-              <span className="nav-icon">📖</span>
-              <span className="nav-text">Courses</span>
-              <span className="dropdown-arrow">
-                {coursesDropdown ? "▼" : "▶"}
-              </span>
-            </div>
-
-            {coursesDropdown && (
-              <div className="nav-dropdown-menu">
+          <ul className="nav-list">
+            {menuItems.map((item) => (
+              <li key={item.path} className="nav-item">
                 <Link
-                  to="/dashboard/courses/nism"
-                  className="nav-dropdown-item"
-                  onClick={() => setCoursesDropdown(false)}
+                  to={item.path}
+                  className={`nav-link ${isActive(item.path) ? "active" : ""}`}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  NISM Series
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
                 </Link>
-                <Link
-                  to="/dashboard/courses/forex"
-                  className="nav-dropdown-item"
-                  onClick={() => setCoursesDropdown(false)}
-                >
-                  Forex Market
-                </Link>
-                <Link
-                  to="/dashboard/courses/stock"
-                  className="nav-dropdown-item"
-                  onClick={() => setCoursesDropdown(false)}
-                >
-                  Stock Market
-                </Link>
+              </li>
+            ))}
+
+            {/* Courses Dropdown */}
+            <li className="nav-item dropdown">
+              <div
+                className={`nav-link dropdown-toggle ${isActive("/dashboard/courses") ? "active" : ""}`}
+                onClick={toggleCoursesDropdown}
+              >
+                <span className="nav-icon">📖</span>
+                <span className="nav-label">Courses</span>
+                <span className={`dropdown-arrow ${coursesDropdownOpen ? "open" : ""}`}>
+                  ▼
+                </span>
               </div>
-            )}
-          </div>
+              {coursesDropdownOpen && (
+                <ul className="dropdown-menu">
+                  {courseCategories.map((category) => (
+                    <li key={category.path}>
+                      <Link
+                        to={category.path}
+                        className={`dropdown-link ${
+                          location.pathname === category.path ? "active" : ""
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {category.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
 
-          <div className="nav-divider"></div>
-
-          <div className="nav-item logout-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
-            <span className="nav-text">Logout</span>
-          </div>
+            <li className="nav-divider"></li>
+          </ul>
         </nav>
 
         <div className="sidebar-footer">
           <div className="user-info">
             <div className="user-avatar">
-              {user.firstname?.[0]?.toUpperCase() || "U"}
+              {user.firstname?.[0]?.toUpperCase() || user.first_name?.[0]?.toUpperCase() || "U"}
+              {user.lastname?.[0]?.toUpperCase() || user.last_name?.[0]?.toUpperCase() || ""}
             </div>
             <div className="user-details">
               <div className="user-name">
-                {user.firstname} {user.lastname}
+                {user.firstname || user.first_name} {user.lastname || user.last_name}
               </div>
               <div className="user-email">{user.email}</div>
             </div>
           </div>
+          <button className="logout-btn" onClick={handleLogout}>
+            <span className="logout-icon">🚪</span>
+            <span className="logout-text">Logout</span>
+          </button>
         </div>
       </aside>
 
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu-overlay active" onClick={() => setMobileMenuOpen(false)} />
+      )}
+
       {/* Main Content */}
-      <main className="dashboard-main">
-        {/* Top Bar */}
-        <div className="topbar">
-          <button
-            className="mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            ☰
-          </button>
-          <div className="topbar-right">
+      <main className={`main-content ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
+        <header className="main-header">
+          <div className="header-left">
+            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              ☰
+            </button>
+            <h1 className="page-title">{getPageTitle()}</h1>
+          </div>
+          <div className="header-right">
             <div className="notifications">
               <span className="notification-icon">🔔</span>
               <span className="notification-badge">3</span>
             </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
-            <div className="mobile-menu" onClick={(e) => e.stopPropagation()}>
-              <div className="mobile-menu-header">
-                <div className="logo">
-                  <span className="logo-icon">🧠</span>
-                  <span className="logo-text">GrowthMindz</span>
-                </div>
-                <button className="close-btn" onClick={() => setMobileMenuOpen(false)}>
-                  ✕
-                </button>
-              </div>
-              <nav className="mobile-nav">
-                <Link
-                  to="/dashboard"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  🏠 Dashboard
-                </Link>
-                <Link
-                  to="/dashboard/profile"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  👤 Profile
-                </Link>
-                <Link
-                  to="/dashboard/settings"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  ⚙️ Settings
-                </Link>
-                <Link
-                  to="/dashboard/learning"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  📚 My Learning
-                </Link>
-                <Link
-                  to="/dashboard/progress"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  📊 Progress
-                </Link>
-                <div className="mobile-nav-divider"></div>
-                <Link
-                  to="/dashboard/courses/nism"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  📖 NISM Series
-                </Link>
-                <Link
-                  to="/dashboard/courses/forex"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  📖 Forex Market
-                </Link>
-                <Link
-                  to="/dashboard/courses/stock"
-                  className="mobile-nav-item"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  📖 Stock Market
-                </Link>
-                <div className="mobile-nav-divider"></div>
-                <div
-                  className="mobile-nav-item logout-item"
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  🚪 Logout
-                </div>
-              </nav>
+            <div className="user-greeting">
+              Welcome, {user.firstname || user.first_name}!
             </div>
           </div>
-        )}
+        </header>
 
-        {/* Page Content */}
-        <div className="dashboard-content">{children}</div>
+        <div className="content-wrapper">{children}</div>
       </main>
     </div>
   );
-}
+};
 
 export default DashboardLayout;

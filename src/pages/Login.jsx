@@ -65,8 +65,8 @@ function Login() {
         alert("Login successful!");
         // Store user data in localStorage or context
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        // Redirect to dashboard or home page
-        navigate("/");
+        // Redirect to dashboard
+        navigate("/dashboard");
       }
     } catch (error) {
       console.error("Login error:", error);

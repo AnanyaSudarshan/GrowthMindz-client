@@ -6,6 +6,13 @@ body {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color: #0f172a;
   background: #ffffff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] body {
+  background: #0f172a;
+  color: #f1f5f9;
 }
 
 /* Reusable container */
@@ -21,11 +28,22 @@ body {
   padding: 10px 16px;
   border-radius: 10px;
   border: 1px solid transparent;
+  transition: all 0.3s ease;
 }
 .btn--primary { background: #0c6cf2; color: #ffffff; }
 .btn--primary:hover { background: #0a5ed3; }
 .btn--ghost { background: #ffffff; color: #0f172a; border-color: #e2e8f0; }
 .btn--ghost:hover { background: #f8fafc; }
+
+/* Dark mode button styles */
+[data-theme="dark"] .btn--ghost { 
+  background: #1e293b; 
+  color: #f1f5f9; 
+  border-color: #334155; 
+}
+[data-theme="dark"] .btn--ghost:hover { 
+  background: #334155; 
+}
 
 
 

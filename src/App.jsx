@@ -9,6 +9,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Profile from "./pages/dashboard/Profile";
 import Settings from "./pages/dashboard/Settings";
+import ProductPage from "./pages/dashboard/ProductPage";
 import MyLearning from "./pages/dashboard/MyLearning";
 import Progress from "./pages/dashboard/Progress";
 import Courses from "./pages/dashboard/Courses";
@@ -47,6 +48,14 @@ function App() {
             element={
               <DashboardLayout>
                 <Settings />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/dashboard/product"
+            element={
+              <DashboardLayout>
+                <ProductPage />
               </DashboardLayout>
             }
           />

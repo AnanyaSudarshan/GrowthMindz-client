@@ -1,381 +1,157 @@
-.product-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0;
-}
-
-/* Video Section */
-.pp-video-section {
-  margin-bottom: 32px;
-}
-
-.pp-video-wrapper {
-  position: relative;
-  width: 100%;
-  background: #0b1220;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-/* 16:9 Aspect Ratio using padding-top trick */
-.pp-video-wrapper::before {
-  content: "";
-  display: block;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
-}
-
-.pp-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: #0b1220;
-}
-
-.pp-video-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+/* Centering container */
+.product-page--center {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0b1220;
-  z-index: 10;
+  padding: 16px;
 }
 
-.pp-spinner {
-  color: #60a5fa;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Course Information Card */
-.pp-info-section {
-  margin-bottom: 48px;
-}
-
-.pp-info-card {
-  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
-  border-radius: 20px;
-  padding: 48px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Course Image/Thumbnail */
-.pp-image-container {
-  width: 90%;
-  margin: 0 auto 24px auto;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.pp-course-image {
+/* Compact product card */
+.product-card {
   width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  aspect-ratio: 16 / 9;
+  max-width: 400px;
+  min-width: 320px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 
-.pp-image-placeholder {
+/* Header with gradient and icon */
+.product-card__header {
+  height: 150px;
+  background: linear-gradient(135deg, #6B7FE8 0%, #A78BFA 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 240px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 48px;
 }
 
-.pp-book-icon {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* GOAT Text */
-.pp-series {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-/* Course Title */
-.pp-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 16px 0;
-  line-height: 1.2;
-}
-
-/* Course Description */
-.pp-description {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
-  margin: 0 0 24px 0;
-}
-
-/* Meta Information Row */
-.pp-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.pp-meta-item {
+.product-card__icon-wrap {
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.9);
+  justify-content: center;
 }
 
-.pp-meta-icon {
-  color: rgba(255, 255, 255, 0.9);
+.product-card__icon {
+  width: 80px;
+  height: 100px;
+  color: #22d3ee; /* cyan/turquoise */
 }
 
-.pp-meta-text {
+/* Content */
+.product-card__content {
+  background: #ffffff;
+  padding: 16px 18px 8px 18px;
+  text-align: center;
+}
+
+.product-card__tag {
+  color: #8B9FE8;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
 
-/* Difficulty Badge */
-.pp-difficulty-badge {
+.product-card__title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 4px 0 6px 0;
+}
+
+.product-card__subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 0 0 12px 0;
+}
+
+.product-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.meta-item {
   display: inline-flex;
   align-items: center;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
+  gap: 6px;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #334155;
 }
 
-.pp-difficulty--beginner {
-  background: rgba(34, 197, 94, 0.3);
-  border-color: rgba(34, 197, 94, 0.5);
+.meta-item__icon {
+  color: #334155;
 }
 
-.pp-difficulty--intermediate {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
-}
-
-.pp-difficulty--advanced {
-  background: rgba(239, 68, 68, 0.3);
-  border-color: rgba(239, 68, 68, 0.5);
-}
-
-/* Rating/Stars */
-.pp-rating-container {
-  display: flex;
+.badge {
+  display: inline-flex;
   align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+  background: #eef2ff;
+  border: 1px solid #e5e7eb;
 }
 
-.pp-stars {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.pp-star {
-  color: #e5e7eb;
-  flex-shrink: 0;
-}
-
-.pp-star--full {
-  color: #f59e0b;
-}
-
-.pp-star--half {
-  color: #f59e0b;
-}
-
-.pp-star--empty {
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.pp-star-value {
-  margin-left: 8px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 15px;
-}
-
-/* Divider */
-.pp-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 24px 0;
-}
-
-/* Price and Buttons Row */
-.pp-action-row {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.pp-price {
-  font-size: 32px;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 4px;
-}
-
-.pp-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-}
-
-.pp-btn {
-  padding: 14px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.pp-btn--enroll {
-  background: #ffffff;
+.badge--level {
+  background: #eef2ff;
   color: #1f2937;
 }
 
-.pp-btn--enroll:hover {
-  background: #f3f4f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.product-card__rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
-.pp-btn--buy {
-  background: #8b5cf6;
+.star {
+  color: #FCD34D;
+}
+
+.rating-value {
+  font-size: 14px;
+  color: #334155;
+  margin-left: 4px;
+}
+
+/* Footer */
+.product-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px 16px 18px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.enroll-now {
+  color: #10B981;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.buy-btn {
+  background: linear-gradient(135deg, #6B7FE8 0%, #7C8CF4 60%);
   color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.pp-btn--buy:hover {
-  background: #7c3aed;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-}
-
-/* Responsive Design */
-@media (min-width: 768px) {
-  .pp-info-card {
-    padding: 48px 64px;
-  }
-
-  .pp-title {
-    font-size: 42px;
-  }
-
-  .pp-action-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .pp-price {
-    margin-bottom: 0;
-  }
-
-  .pp-buttons {
-    flex-direction: row;
-    width: auto;
-    gap: 16px;
-  }
-
-  .pp-btn {
-    width: auto;
-    min-width: 160px;
-  }
-
-  .pp-image-placeholder {
-    min-height: 300px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .pp-info-card {
-    padding: 64px;
-  }
-
-  .pp-image-container {
-    width: 70%;
-  }
-}
-
-@media (max-width: 767px) {
-  .pp-info-card {
-    padding: 32px 24px;
-  }
-
-  .pp-title {
-    font-size: 28px;
-  }
-
-  .pp-description {
-    font-size: 15px;
-  }
-
-  .pp-price {
-    font-size: 28px;
-  }
-
-  .pp-image-placeholder {
-    min-height: 200px;
-    padding: 32px;
-  }
-
-  .pp-book-icon {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-@media (max-width: 480px) {
-  .pp-info-card {
-    padding: 24px 20px;
-  }
-
-  .pp-title {
-    font-size: 24px;
-  }
-
-  .pp-meta-row {
-    gap: 12px;
-  }
-
-  .pp-meta-item {
-    font-size: 14px;
-  }
+.buy-btn:hover {
+  filter: brightness(0.97);
 }
 

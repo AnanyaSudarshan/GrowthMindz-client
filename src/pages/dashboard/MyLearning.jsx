@@ -1,20 +1,50 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Courses.css";
 
 function MyLearning() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
-  
-  const courses = [
-    { id: 1, title: "Technical Analysis for Forex", category: "Forex", progress: 65, thumbnail: "📈", timeSpent: "4h 30m" },
-    { id: 2, title: "Stock Market Basics", category: "Stock", progress: 100, thumbnail: "📊", timeSpent: "8h 15m" },
-    { id: 3, title: "NISM Series V-A", category: "NISM", progress: 30, thumbnail: "📘", timeSpent: "2h 20m" },
-  ];
+  const [courses, setCourses] = useState([]);
 
-  const filteredCourses = filter === "all" 
-    ? courses 
-    : filter === "completed" 
-    ? courses.filter(c => c.progress === 100)
-    : courses.filter(c => c.progress < 100);
+  const loadProgress = () => {
+    try { return JSON.parse(localStorage.getItem('gm:progress')) || { courses: {} }; } catch { return { courses: {} }; }
+  };
+  const formatTime = (seconds) => {
+    if (!seconds || seconds <= 0) return "0m";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
+
+  useEffect(() => {
+    const progress = loadProgress();
+    const nism = progress.courses?.nism || {};
+    const list = Object.values(nism);
+    const seconds = list.reduce((s, v) => s + (v.seconds || 0), 0);
+    const duration = list.reduce((s, v) => s + (v.duration || 0), 0);
+    const percent = duration > 0 ? Math.min(100, Math.round((seconds / duration) * 100)) : 0;
+
+    const items = [];
+    if (list.length > 0) {
+      items.push({
+        id: "nism",
+        title: "NISM Series",
+        category: "NISM",
+        progress: percent,
+        thumbnail: "📘",
+        timeSpent: formatTime(seconds),
+      });
+    }
+    setCourses(items);
+  }, []);
+
+  const filteredCourses = useMemo(() => {
+    if (filter === "all") return courses;
+    if (filter === "completed") return courses.filter(c => c.progress === 100);
+    if (filter === "in-progress") return courses.filter(c => c.progress < 100);
+    return courses;
+  }, [courses, filter]);
 
   return (
     <div className="courses-page">
@@ -47,7 +77,7 @@ function MyLearning() {
 
       {/* Course Grid */}
       <div className="courses-grid">
-        {filteredCourses.map((course) => (
+        {filteredCourses.length ? filteredCourses.map((course) => (
           <div key={course.id} className="course-card">
             <div className="course-thumbnail">{course.thumbnail}</div>
             <div className="course-content">
@@ -62,10 +92,16 @@ function MyLearning() {
                   <div className="progress-fill" style={{width: `${course.progress}%`}}></div>
                 </div>
               </div>
-              <button className="btn btn-primary">Continue Learning →</button>
+              <button className="btn btn-primary" onClick={() => navigate('/dashboard/courses/nism')}>Continue Learning →</button>
             </div>
           </div>
-        ))}
+        )) : (
+          <div className="no-courses">
+            <div className="no-courses-icon">📚</div>
+            <h3>No learning yet</h3>
+            <p>Start by enrolling in a course</p>
+          </div>
+        )}
       </div>
     </div>
   );

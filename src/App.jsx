@@ -11,7 +11,6 @@ import Profile from "./pages/dashboard/Profile";
 import Settings from "./pages/dashboard/Settings";
 import ProductPage from "./pages/dashboard/ProductPage";
 import MyLearning from "./pages/dashboard/MyLearning";
-import Progress from "./pages/dashboard/Progress";
 import Courses from "./pages/dashboard/Courses";
 import "./App.css";
 
@@ -64,14 +63,6 @@ function App() {
             element={
               <DashboardLayout>
                 <MyLearning />
-              </DashboardLayout>
-            }
-          />
-          <Route
-            path="/dashboard/progress"
-            element={
-              <DashboardLayout>
-                <Progress />
               </DashboardLayout>
             }
           />

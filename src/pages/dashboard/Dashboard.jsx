@@ -87,34 +87,7 @@ function Dashboard() {
         ))}
       </div>
 
-      {/* Continue Learning */}
-      <div className="section">
-        <h2 className="section-title">Continue Learning</h2>
-        <div className="continue-learning-card">
-          <div className="course-thumbnail-large">
-            {continueLearning.thumbnail}
-          </div>
-          <div className="course-info">
-            <div className="course-category">{continueLearning.category}</div>
-            <h3 className="course-title">{continueLearning.title}</h3>
-            <div className="progress-container">
-              <div className="progress-info">
-                <span>Progress: {continueLearning.progress}%</span>
-                <span>{continueLearning.duration} remaining</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${continueLearning.progress}%` }}
-                ></div>
-              </div>
-            </div>
-            <Link to="/dashboard/learning" className="btn btn-primary">
-              Continue Learning →
-            </Link>
-          </div>
-        </div>
-      </div>
+      {/* Continue Learning section removed as requested */}
 
       {/* Recent Activity */}
       <div className="section">

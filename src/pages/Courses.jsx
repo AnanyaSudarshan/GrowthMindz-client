@@ -1,242 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import './Courses.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import "./Courses.css";
+import axios from "axios";
+
+function extractYouTubeId(url) {
+  if (!url) return "";
+  const match = url.match(
+    /(?:youtu.be\/|youtube.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w\-]+)/
+  );
+  return match ? match[1] : "";
+}
 
 const Courses = ({ category }) => {
   const { category: urlCategory } = useParams();
-  const currentCategory = category || urlCategory || 'all';
+  const currentCategory = category || urlCategory || "all";
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('name');
-
-  const courseData = {
-    nism: [
-      {
-        id: 1,
-        title: 'NISM Series I: Currency Derivatives',
-        description: 'Learn about currency derivatives trading and risk management.',
-        duration: '40 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.8,
-        thumbnail: '💱',
-        enrolled: 1250
-      },
-      {
-        id: 2,
-        title: 'NISM Series V-A: Mutual Fund Distributors',
-        description: 'Comprehensive course on mutual fund distribution and regulations.',
-        duration: '35 hours',
-        difficulty: 'Beginner',
-        price: 'Free',
-        rating: 4.6,
-        thumbnail: '📈',
-        enrolled: 2100
-      },
-      {
-        id: 3,
-        title: 'NISM Series VIII: Equity Derivatives',
-        description: 'Master equity derivatives trading strategies and analysis.',
-        duration: '45 hours',
-        difficulty: 'Advanced',
-        price: 'Free',
-        rating: 4.9,
-        thumbnail: '📊',
-        enrolled: 980
-      },
-      {
-        id: 4,
-        title: 'NISM Series X-A: Investment Adviser (Level 1)',
-        description: 'Foundation course for investment advisory services.',
-        duration: '50 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.7,
-        thumbnail: '💼',
-        enrolled: 1500
-      },
-      {
-        id: 5,
-        title: 'NISM Series X-B: Investment Adviser (Level 2)',
-        description: 'Advanced investment advisory and portfolio management.',
-        duration: '55 hours',
-        difficulty: 'Advanced',
-        price: 'Free',
-        rating: 4.8,
-        thumbnail: '🎯',
-        enrolled: 750
-      }
-    ],
-    forex: [
-      {
-        id: 6,
-        title: 'Introduction to Forex Trading',
-        description: 'Learn the basics of foreign exchange trading.',
-        duration: '20 hours',
-        difficulty: 'Beginner',
-        price: 'Free',
-        rating: 4.5,
-        thumbnail: '🌍',
-        enrolled: 3200
-      },
-      {
-        id: 7,
-        title: 'Technical Analysis for Forex',
-        description: 'Master technical analysis techniques for forex markets.',
-        duration: '30 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.7,
-        thumbnail: '📈',
-        enrolled: 1800
-      },
-      {
-        id: 8,
-        title: 'Forex Trading Strategies',
-        description: 'Learn proven strategies for successful forex trading.',
-        duration: '35 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.6,
-        thumbnail: '⚡',
-        enrolled: 1500
-      },
-      {
-        id: 9,
-        title: 'Risk Management in Forex',
-        description: 'Essential risk management techniques for forex traders.',
-        duration: '25 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.8,
-        thumbnail: '🛡️',
-        enrolled: 1200
-      },
-      {
-        id: 10,
-        title: 'Advanced Forex Trading',
-        description: 'Advanced concepts and strategies for experienced traders.',
-        duration: '40 hours',
-        difficulty: 'Advanced',
-        price: 'Free',
-        rating: 4.9,
-        thumbnail: '🚀',
-        enrolled: 800
-      }
-    ],
-    stock: [
-      {
-        id: 11,
-        title: 'Stock Market Basics for Beginners',
-        description: 'Complete guide to understanding stock markets.',
-        duration: '25 hours',
-        difficulty: 'Beginner',
-        price: 'Free',
-        rating: 4.6,
-        thumbnail: '📈',
-        enrolled: 4500
-      },
-      {
-        id: 12,
-        title: 'Fundamental Analysis',
-        description: 'Learn to analyze companies and make informed investment decisions.',
-        duration: '35 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.7,
-        thumbnail: '📊',
-        enrolled: 2200
-      },
-      {
-        id: 13,
-        title: 'Technical Analysis Masterclass',
-        description: 'Comprehensive technical analysis course for stock trading.',
-        duration: '40 hours',
-        difficulty: 'Intermediate',
-        price: 'Free',
-        rating: 4.8,
-        thumbnail: '📉',
-        enrolled: 1800
-      },
-      {
-        id: 14,
-        title: 'Options Trading',
-        description: 'Learn options trading strategies and risk management.',
-        duration: '30 hours',
-        difficulty: 'Advanced',
-        price: 'Free',
-        rating: 4.9,
-        thumbnail: '⚡',
-        enrolled: 1200
-      },
-      {
-        id: 15,
-        title: 'Intraday Trading Strategies',
-        description: 'Master intraday trading techniques and strategies.',
-        duration: '25 hours',
-        difficulty: 'Advanced',
-        price: 'Free',
-        rating: 4.7,
-        thumbnail: '⚡',
-        enrolled: 1600
-      }
-    ]
-  };
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("name");
 
   useEffect(() => {
-    let allCourses = [];
-    if (currentCategory === 'all') {
-      allCourses = [...courseData.nism, ...courseData.forex, ...courseData.stock];
-    } else {
-      allCourses = courseData[currentCategory] || [];
-    }
-    setCourses(allCourses);
-    setFilteredCourses(allCourses);
+    // Fetch courses from backend only for current category
+    const fetchCourses = async () => {
+      try {
+        let apiCategory = currentCategory;
+        if (apiCategory === "all") apiCategory = undefined;
+        const res = await axios.get(
+          `http://localhost:5000/api/courses${
+            apiCategory ? `?category=${apiCategory.toUpperCase()}` : ""
+          }`
+        );
+        setCourses(res.data || []);
+        setFilteredCourses(res.data || []);
+      } catch (err) {
+        setCourses([]);
+        setFilteredCourses([]);
+      }
+    };
+    fetchCourses();
   }, [currentCategory]);
 
   useEffect(() => {
     let filtered = courses;
-
-    // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(course =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (course) =>
+          (course.title || course.name || "")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (course.description || "")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
     }
-
-    // Difficulty filter
-    if (filter !== 'all') {
-      filtered = filtered.filter(course => course.difficulty.toLowerCase() === filter);
+    if (filter !== "all") {
+      filtered = filtered.filter(
+        (course) => (course.difficulty || "").toLowerCase() === filter
+      );
     }
-
-    // Sort
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'name':
-          return a.title.localeCompare(b.title);
-        case 'rating':
-          return b.rating - a.rating;
-        case 'enrolled':
-          return b.enrolled - a.enrolled;
-        case 'duration':
-          return parseInt(a.duration) - parseInt(b.duration);
+        case "name":
+          return (a.title || a.name).localeCompare(b.title || b.name);
+        case "rating":
+          return (b.rating || 0) - (a.rating || 0);
+        case "enrolled":
+          return (b.enrolled || 0) - (a.enrolled || 0);
+        case "duration":
+          // parseInt handles '40 hours' (returns 40)
+          return parseInt(a.duration || "0") - parseInt(b.duration || "0");
         default:
           return 0;
       }
     });
-
     setFilteredCourses(filtered);
   }, [courses, searchTerm, filter, sortBy]);
 
   const getCategoryTitle = () => {
     switch (currentCategory) {
-      case 'nism': return 'NISM Series Courses';
-      case 'forex': return 'Forex Market Courses';
-      case 'stock': return 'Stock Market Courses';
-      default: return 'All Courses';
+      case "nism":
+      case "NISM":
+        return "NISM Series Courses";
+      case "forex":
+      case "FOREX":
+        return "Forex Market Courses";
+      case "stock":
+      case "STOCK":
+        return "Stock Market Courses";
+      default:
+        return "All Courses";
     }
   };
 
@@ -247,8 +100,33 @@ const Courses = ({ category }) => {
         <div className="course-badge">{course.price}</div>
       </div>
       <div className="course-content">
-        <h3 className="course-title">{course.title}</h3>
+        <h3 className="course-title">{course.title || course.name}</h3>
         <p className="course-description">{course.description}</p>
+        {/* Video player for NISM series (and only if course.courses_vedio exists) */}
+        {currentCategory.toLowerCase() === "nism" &&
+          course.courses_vedio &&
+          (course.courses_vedio.includes("youtu") ? (
+            <div className="course-video">
+              <iframe
+                width="350"
+                height="200"
+                src={`https://www.youtube.com/embed/${extractYouTubeId(
+                  course.courses_vedio
+                )}`}
+                title={course.title || course.name}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          ) : (
+            <div className="course-video">
+              <video width="350" controls>
+                <source src={course.courses_vedio} />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          ))}
         <div className="course-meta">
           <div className="meta-item">
             <span className="meta-icon">⏱️</span>
@@ -264,7 +142,9 @@ const Courses = ({ category }) => {
           </div>
           <div className="meta-item">
             <span className="meta-icon">👥</span>
-            <span className="meta-text">{course.enrolled.toLocaleString()}</span>
+            <span className="meta-text">
+              {course.enrolled ? course.enrolled.toLocaleString() : ""}
+            </span>
           </div>
         </div>
         <div className="course-actions">
@@ -279,7 +159,9 @@ const Courses = ({ category }) => {
     <div className="courses-page">
       <div className="courses-header">
         <h1>{getCategoryTitle()}</h1>
-        <p>Discover and enroll in our comprehensive financial education courses</p>
+        <p>
+          Discover and enroll in our comprehensive financial education courses
+        </p>
       </div>
 
       {/* Filters and Search */}
@@ -343,13 +225,18 @@ const Courses = ({ category }) => {
         </div>
         <div className="stat-item">
           <div className="stat-number">
-            {courses.reduce((sum, course) => sum + course.enrolled, 0).toLocaleString()}
+            {courses
+              .reduce((sum, course) => sum + (course.enrolled || 0), 0)
+              .toLocaleString()}
           </div>
           <div className="stat-label">Total Enrollments</div>
         </div>
         <div className="stat-item">
           <div className="stat-number">
-            {(courses.reduce((sum, course) => sum + course.rating, 0) / courses.length).toFixed(1)}
+            {(
+              courses.reduce((sum, course) => sum + (course.rating || 0), 0) /
+              courses.length
+            ).toFixed(1)}
           </div>
           <div className="stat-label">Average Rating</div>
         </div>

@@ -86,7 +86,7 @@ const DashboardLayout = ({ children }) => {
         <div className="sidebar-header">
           <div className="logo">
             <span className="logo-icon">🧠</span>
-            <span className="logo-text">GrowthMindz</span>
+            <span className="logo-text">MindsetMovez</span>
           </div>
           <button className="sidebar-toggle" onClick={toggleSidebar}>
             {isSidebarOpen ? "←" : "→"}

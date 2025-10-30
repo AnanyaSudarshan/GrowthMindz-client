@@ -102,7 +102,7 @@ function Signup() {
       );
 
       if (response.data.message) {
-        alert("Signup successful! Welcome to GrowthMindz!");
+        alert("Signup successful! Welcome to MindsetMovez!");
         // Store user data from server response in localStorage
         localStorage.setItem("user", JSON.stringify(response.data.user));
         navigate("/dashboard");
@@ -121,7 +121,7 @@ function Signup() {
 
   const handleGoogleSuccess = (user) => {
     setIsGoogleLoading(false);
-    alert(`Welcome to GrowthMindz, ${user.name}! (Demo mode)`);
+    alert(`Welcome to MindsetMovez, ${user.name}! (Demo mode)`);
     // In real app, redirect to dashboard
   };
 
@@ -140,7 +140,7 @@ function Signup() {
             style={{ cursor: "pointer" }}
           >
             <div className="logo-icon">🧠</div>
-            <h1>GrowthMindz</h1>
+            <h1>MindsetMovez</h1>
           </div>
           <h2>Create your account</h2>
           <p>Start your financial learning journey today</p>

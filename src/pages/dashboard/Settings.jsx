@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import "./Settings.css";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Settings() {
+  const navigate = useNavigate();
   const { theme, toggleTheme, isDark } = useTheme();
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -124,9 +127,28 @@ function Settings() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-      alert("Account deletion feature coming soon!");
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      alert("User not found. Redirecting to login.");
+      navigate("/login");
+      return;
+    }
+    const user = JSON.parse(userData);
+    try {
+      const response = await axios.delete("http://localhost:5000/api/delete-profile", {
+        data: { id: user.id },
+      });
+      if (response.data.message === "Profile deleted successfully") {
+        localStorage.removeItem("user");
+        alert("Account deleted successfully.");
+        navigate("/login");
+      } else {
+        alert(response.data.message || "Failed to delete account.");
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "Error deleting account. Please try again.");
     }
   };
 

@@ -101,7 +101,7 @@ function Login() {
             style={{ cursor: "pointer" }}
           >
             <div className="logo-icon">🧠</div>
-            <h1>GrowthMindz</h1>
+            <h1>MindsetMovez</h1>
           </div>
           <h2>Welcome back</h2>
           <p>Sign in to your account to continue learning</p>

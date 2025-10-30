@@ -7,7 +7,7 @@ function Navbar() {
       <div className="navbar__left">
         <a href="#top" className="brand" aria-label="Home">
           <span className="brand__icon" />
-          <span className="brand__text">GrowthMindz</span>
+          <span className="brand__text">MindsetMovez</span>
         </a>
         <nav className="navbar__nav" aria-label="Primary">
           <a href="#about" className="nav__link">About</a>

@@ -1,6 +1,6 @@
 # Authentication System
 
-This document describes the complete authentication system implemented for the GrowthMindz application.
+This document describes the complete authentication system implemented for the MindsetMovez application.
 
 ## Features Implemented
 

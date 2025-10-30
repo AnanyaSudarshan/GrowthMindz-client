@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./Settings.css";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("account");
   const [settings, setSettings] = useState({
     // Account Settings
@@ -90,17 +92,33 @@ const Settings = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     const confirmed = window.confirm(
       "Are you sure you want to delete your account? This action cannot be undone."
     );
-    if (confirmed) {
-      const doubleConfirmed = window.confirm(
-        'This will permanently delete all your data. Type "DELETE" to confirm.'
-      );
-      if (doubleConfirmed) {
-        alert("Account deletion requested. Please contact support.");
+    if (!confirmed) return;
+
+    const userData = localStorage.getItem("user");
+    if (!userData) {
+      alert("User not found. Please log in again.");
+      navigate("/login");
+      return;
+    }
+    const user = JSON.parse(userData);
+    try {
+      // API expects { id } in request body (DELETE)
+      const response = await axios.delete("http://localhost:5000/api/delete-profile", {
+        data: { id: user.id },
+      });
+      if (response.data.message === "Profile deleted successfully") {
+        localStorage.removeItem("user");
+        alert("Account deleted successfully.");
+        navigate("/login");
+      } else {
+        alert(response.data.message || "Failed to delete account.");
       }
+    } catch (error) {
+      alert(error.response?.data?.message || "Error deleting account. Please try again.");
     }
   };
 

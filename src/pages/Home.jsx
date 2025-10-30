@@ -52,7 +52,7 @@ function Home() {
       <Curriculum />
       <footer className="footer">
         <div className="container">
-          <p>© {new Date().getFullYear()} GrowthMindz. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} MindsetMovez. All rights reserved.</p>
         </div>
       </footer>
     </div>

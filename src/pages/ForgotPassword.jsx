@@ -80,7 +80,7 @@ function ForgotPassword() {
           <div className="auth-header">
             <div className="auth-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
               <div className="logo-icon">🧠</div>
-              <h1>GrowthMindz</h1>
+              <h1>MindsetMovez</h1>
             </div>
             <div className="success-icon">✅</div>
             <h2>Check your email</h2>
@@ -139,7 +139,7 @@ function ForgotPassword() {
         <div className="auth-header">
           <div className="auth-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
             <div className="logo-icon">🧠</div>
-            <h1>GrowthMindz</h1>
+            <h1>MindsetMovez</h1>
           </div>
           <h2>Forgot your password?</h2>
           <p>No worries! Enter your email and we'll send you a reset link.</p>

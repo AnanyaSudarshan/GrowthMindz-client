@@ -49,7 +49,7 @@ const DashboardLayout = ({ children }) => {
     { path: "/dashboard", icon: "🏠", label: "Dashboard" },
     { path: "/dashboard/profile", icon: "👤", label: "Profile" },
     { path: "/dashboard/settings", icon: "⚙️", label: "Settings" },
-    { path: "/dashboard/product", icon: "🛍️", label: "Product Page" },
+    { path: "/dashboard/product", icon: "🛍️", label: "Product" },
     { path: "/dashboard/learning", icon: "📚", label: "My Learning" },
   ];
 
@@ -64,7 +64,7 @@ const DashboardLayout = ({ children }) => {
     if (path === "/dashboard") return "Dashboard";
     if (path.includes("/profile")) return "Profile";
     if (path.includes("/settings")) return "Settings";
-    if (path.includes("/product")) return "Product Page";
+    if (path.includes("/product")) return "Product";
     if (path.includes("/learning")) return "My Learning";
     if (path.includes("/courses")) {
       if (path.includes("/nism")) return "NISM Series";

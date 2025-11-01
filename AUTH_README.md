@@ -105,3 +105,4 @@ To make this production-ready:
 - Edge 90+
 
 The system uses modern CSS features and React hooks, ensuring compatibility with all modern browsers.
+

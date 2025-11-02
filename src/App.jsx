@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
+import Quiz from "./pages/Quiz";
+import QuizInstructions from "./pages/QuizInstructions";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Profile from "./pages/dashboard/Profile";
 import Settings from "./pages/dashboard/Settings";
@@ -24,6 +26,22 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route
+            path="/quiz-instructions"
+            element={
+              <DashboardLayout>
+                <QuizInstructions />
+              </DashboardLayout>
+            }
+          />
+          <Route
+            path="/quiz"
+            element={
+              <DashboardLayout>
+                <Quiz />
+              </DashboardLayout>
+            }
+          />
           
           {/* Dashboard Routes */}
           <Route

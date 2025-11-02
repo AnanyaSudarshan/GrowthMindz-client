@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./Courses.css";
 
 function extractYouTubeId(url) {
@@ -20,6 +20,7 @@ function extractYouTubeId(url) {
 
 function Courses() {
   const { category } = useParams();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -27,6 +28,7 @@ function Courses() {
   const ytPlayerRef = useRef(null);
   const ytIntervalRef = useRef(null);
   const html5VideoRef = useRef(null);
+  const [quizReady, setQuizReady] = useState(false);
 
   const courseData = {
     nism: [
@@ -121,19 +123,18 @@ function Courses() {
         const player = new YT.Player(playerElId, {
           events: {
             onReady: (e) => {
-              // initialize duration if possible
               try {
                 const dur = e.target.getDuration ? e.target.getDuration() : 0;
                 updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: 0, duration: dur });
               } catch {}
             },
             onStateChange: (ev) => {
-              // 0=ENDED,1=PLAYING,2=PAUSED
               if (ev.data === 0) {
                 try {
                   const dur = ev.target.getDuration ? ev.target.getDuration() : 0;
                   updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: dur, duration: dur });
                 } catch {}
+                setQuizReady(true);
               }
             }
           }
@@ -203,7 +204,7 @@ function Courses() {
                       }catch{}
                     }} onLoadedMetadata={(e)=>{
                       try{ const v=e.currentTarget; updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: v.currentTime||0, duration: v.duration||0 }); }catch{}
-                    }}>
+                    }} onEnded={() => setQuizReady(true)}>
                       <source src={currentVideo?.url} type="video/mp4" />
                     </video>
                   ) : (
@@ -212,6 +213,17 @@ function Courses() {
                     </div>
                   )}
                 </div>
+
+                {quizReady && (
+                  <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={() => navigate('/quiz', { state: { fromCategory: category } })}
+                      className="btn btn--purple"
+                    >
+                      Take the Quiz
+                    </button>
+                  </div>
+                )}
 
                 {isExpanded && (
                   <div
@@ -272,7 +284,7 @@ function Courses() {
                           try{ const v=e.currentTarget; updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: v.currentTime, duration: v.duration }); }catch{}
                         }} onLoadedMetadata={(e)=>{
                           try{ const v=e.currentTarget; updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: v.currentTime||0, duration: v.duration||0 }); }catch{}
-                        }}>
+                        }} onEnded={() => setQuizReady(true)}>
                           <source src={currentVideo?.url} />
                         </video>
                       )}

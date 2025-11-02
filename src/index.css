@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Base reset and smooth scrolling */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -34,6 +38,15 @@ body {
 .btn--primary:hover { background: #0a5ed3; }
 .btn--ghost { background: #ffffff; color: #0f172a; border-color: #e2e8f0; }
 .btn--ghost:hover { background: #f8fafc; }
+
+/* Purple variant for call-to-action buttons */
+.btn--purple {
+  background: #8b5cf6;
+  color: #ffffff;
+}
+.btn--purple:hover {
+  background: #7c3aed;
+}
 
 /* Dark mode button styles */
 [data-theme="dark"] .btn--ghost { 

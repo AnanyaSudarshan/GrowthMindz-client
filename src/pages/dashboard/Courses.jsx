@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "./Courses.css";
 
 function extractYouTubeId(url) {
@@ -21,6 +21,7 @@ function extractYouTubeId(url) {
 function Courses() {
   const { category } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -29,13 +30,12 @@ function Courses() {
   const ytIntervalRef = useRef(null);
   const html5VideoRef = useRef(null);
   const [quizReady, setQuizReady] = useState(false);
+  const [apiCourseTitle, setApiCourseTitle] = useState("");
+  const [apiVideos, setApiVideos] = useState([]);
+  const [searchNoMatch, setSearchNoMatch] = useState(false);
 
   const courseData = {
-    nism: [
-      { id: 1, title: "NISM Series: Chapter 1", desc: "Start your NISM learning with Chapter 1", duration: "", difficulty: "", price: "Free", rating: 0, videoUrl: "https://youtu.be/2ClP539pTzA", videos: [
-        { id: "ch1", title: "NISM Series: Chapter 1", url: "https://youtu.be/2ClP539pTzA" },
-      ] },
-    ],
+    nism: [],
     forex: [
       { id: 1, title: "Introduction to Forex Trading", desc: "Get started with forex basics", duration: "20h", difficulty: "Beginner", price: "Free", rating: 4.5 },
       { id: 2, title: "Technical Analysis for Forex", desc: "Master chart patterns and indicators", duration: "30h", difficulty: "Intermediate", price: "Free", rating: 4.7 },
@@ -53,7 +53,7 @@ function Courses() {
   };
 
   const courses = courseData[category] || [];
-  const categoryName = category === "nism" ? "NISM Series" : category === "forex" ? "Forex Market" : "Stock Market";
+  const categoryName = category === "nism" ? (apiCourseTitle || "NISM Series") : category === "forex" ? "Forex Market" : "Stock Market";
 
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,6 +61,21 @@ function Courses() {
 
   const renderStars = (rating) => {
     return "⭐".repeat(Math.floor(rating)) + (rating % 1 >= 0.5 ? "⭐" : "");
+  };
+
+  const handleSearch = () => {
+    const q = (searchQuery || '').trim().toLowerCase();
+    setSearchNoMatch(false);
+    if (!q) return;
+    if (category === 'nism') {
+      const idx = (nismVideos || []).findIndex(v => String(v.title || '').toLowerCase().includes(q));
+      if (idx >= 0) {
+        setSelectedVideoIndex(idx);
+        setIsEnrolled(true);
+      } else {
+        setSearchNoMatch(true);
+      }
+    }
   };
 
   // LocalStorage progress helpers
@@ -104,13 +119,50 @@ function Courses() {
     }, 200);
   });
 
-  // Derive current video for NISM; fallback to single videoUrl if videos array not provided
+  // Derive current video for NISM; prefer API data if available
   const nismCourse = courseData.nism?.[0] || {};
-  const nismVideos = Array.isArray(nismCourse.videos) && nismCourse.videos.length
-    ? nismCourse.videos
-    : (nismCourse.videoUrl ? [{ id: "ch1", title: nismCourse.title || "Chapter 1", url: nismCourse.videoUrl }] : []);
+  const nismVideos = (Array.isArray(apiVideos) && apiVideos.length)
+    ? apiVideos
+    : (Array.isArray(nismCourse.videos) && nismCourse.videos.length
+      ? nismCourse.videos
+      : (nismCourse.videoUrl ? [{ id: "ch1", title: nismCourse.title || "Chapter 1", url: nismCourse.videoUrl }] : []));
   const currentVideo = nismVideos[selectedVideoIndex] || null;
 
+  useEffect(() => {
+    let abort = false;
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/course-videos`);
+        const data = await res.json();
+        if (abort) return;
+        if (Array.isArray(data) && data.length) {
+          // Try to pick the NISM course rows if present, otherwise use all
+          const nismRows = data.filter(r => String(r.course_title || '').toLowerCase().includes('nism'));
+          const rows = nismRows.length ? nismRows : data;
+          setApiCourseTitle(rows[0].course_title || "");
+          const vids = rows.map((row, idx) => ({ id: `ch${idx+1}`, title: row.course_vedio_title || "", url: row.vedio_url || "" }));
+          setApiVideos(vids);
+          setSelectedVideoIndex(0);
+        } else {
+          setApiCourseTitle("");
+          setApiVideos([]);
+        }
+      } catch (e) {
+        setApiCourseTitle("");
+        setApiVideos([]);
+      }
+    })();
+    return () => { abort = true; };
+  }, []);
+
+  // If coming back from quiz with a requested video index, honor it
+  useEffect(() => {
+    const idx = location?.state?.selectVideoIndex;
+    if (category === 'nism' && Array.isArray(apiVideos) && apiVideos.length && typeof idx === 'number' && idx >= 0 && idx < apiVideos.length) {
+      setSelectedVideoIndex(idx);
+      setIsEnrolled(true);
+    }
+  }, [location?.state, apiVideos, category]);
 
   // Setup YouTube player tracking when enrolled
   useEffect(() => {
@@ -173,24 +225,32 @@ function Courses() {
           placeholder="Search courses..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
           className="search-input"
         />
+        <button className="btn btn-primary" style={{ marginLeft: 8 }} onClick={handleSearch}>Search</button>
       </div>
+      {(category === 'nism' && searchQuery.trim() && searchNoMatch) && (
+        <div className="no-results"><p>No courses found matching your search.</p></div>
+      )}
+      {(category !== 'nism' && searchQuery.trim() && filteredCourses.length === 0) && (
+        <div className="no-results"><p>No courses found matching your search.</p></div>
+      )}
 
       <div className="courses-grid">
         {category === "nism" ? (
           <div className="course-card">
             {isEnrolled ? (
               <div className="course-content">
-                <h3 className="course-title">{currentVideo?.title || "NISM Series: Chapter 1"}</h3>
+                <h3 className="course-title">{currentVideo?.title || apiCourseTitle || "NISM Series: Chapter 1"}</h3>
                 <div className="course-video" style={{ marginTop: 12 }}>
                   {currentVideo?.url && /youtu/.test(currentVideo.url) ? (
                     <iframe
                       id="nismPlayer"
                       width="100%"
-                      height="315"
+                      height="420"
                       src={`https://www.youtube.com/embed/${extractYouTubeId(currentVideo.url)}?enablejsapi=1&origin=${window.location.origin}`}
-                      title={currentVideo?.title || "NISM Series: Chapter 1"}
+                      title={currentVideo?.title || apiCourseTitle || "NISM Series: Chapter 1"}
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -198,14 +258,14 @@ function Courses() {
                       onClick={() => setIsExpanded(true)}
                     />
                   ) : currentVideo?.url ? (
-                    <video ref={html5VideoRef} width="100%" height="315" controls style={{ cursor: "pointer" }} onClick={() => setIsExpanded(true)} onTimeUpdate={(e)=>{
+                    <video ref={html5VideoRef} width="100%" height="420" controls style={{ cursor: "pointer" }} onClick={() => setIsExpanded(true)} onTimeUpdate={(e)=>{
                       try{
                         const v=e.currentTarget; updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: v.currentTime, duration: v.duration });
                       }catch{}
                     }} onLoadedMetadata={(e)=>{
                       try{ const v=e.currentTarget; updateVideoProgress({ courseKey:'nism', videoId: currentVideo.id||'ch1', title: currentVideo.title, url: currentVideo.url, seconds: v.currentTime||0, duration: v.duration||0 }); }catch{}
                     }} onEnded={() => setQuizReady(true)}>
-                      <source src={currentVideo?.url} type="video/mp4" />
+                      <source src={currentVideo?.url} />
                     </video>
                   ) : (
                     <div className="no-video" style={{ padding: 12, background: "#fafafa", border: "1px solid #eee", borderRadius: 6 }}>
@@ -213,18 +273,36 @@ function Courses() {
                     </div>
                   )}
                 </div>
-
                 {quizReady && (
                   <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
                     <button
-                      onClick={() => navigate('/quiz', { state: { fromCategory: category } })}
+                      onClick={() => navigate('/quiz', { state: { fromCategory: category, videoIndex: selectedVideoIndex, totalVideos: nismVideos.length, videoTitle: currentVideo?.title || '' } })}
                       className="btn btn--purple"
                     >
                       Take the Quiz
                     </button>
                   </div>
                 )}
-
+                {nismVideos.length > 1 && (
+                  <div style={{ marginTop: 12, display: 'grid', gap: 8 }}>
+                    {nismVideos.map((v, i) => (
+                      <button
+                        key={v.id || i}
+                        onClick={() => setSelectedVideoIndex(i)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '8px 10px',
+                          borderRadius: 6,
+                          border: i === selectedVideoIndex ? '1px solid #6c5ce7' : '1px solid #e5e7eb',
+                          background: i === selectedVideoIndex ? '#f5f3ff' : '#fff',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {v.title || `Chapter ${i+1}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {isExpanded && (
                   <div
                     style={{
@@ -273,7 +351,7 @@ function Courses() {
                           width="100%"
                           height="100%"
                           src={`https://www.youtube.com/embed/${extractYouTubeId(currentVideo.url)}?enablejsapi=1&origin=${window.location.origin}`}
-                          title={currentVideo?.title || "NISM Series: Chapter 1"}
+                          title={currentVideo?.title || apiCourseTitle || "NISM Series: Chapter 1"}
                           frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
@@ -297,8 +375,8 @@ function Courses() {
                 <div className="course-thumbnail">📘</div>
                 <div className="course-content">
                   <span className="course-category">NISM Series</span>
-                  <h3 className="course-title">NISM Series: Chapter 1</h3>
-                  <p className="course-desc">Watch Chapter 1 directly on this page.</p>
+                  <h3 className="course-title">{apiCourseTitle || "NISM Series: Chapter 1"}</h3>
+                  <p className="course-desc">Explore our comprehensive nism series courses</p>
 
                   <div className="course-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
                     <span className="course-price">Free</span>
@@ -337,12 +415,6 @@ function Courses() {
           ))
         )}
       </div>
-
-      {filteredCourses.length === 0 && (
-        <div className="no-results">
-          <p>No courses found matching your search.</p>
-        </div>
-      )}
     </div>
   );
 }

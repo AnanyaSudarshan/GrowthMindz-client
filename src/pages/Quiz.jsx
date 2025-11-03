@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Quiz.css';
 
@@ -121,7 +121,11 @@ const QUIZ_TIME = 10 * 60; // 10 minutes in seconds
 
 function Quiz() {
   const location = useLocation();
+  const navigate = useNavigate();
   const fromCategory = location.state?.fromCategory;
+  const videoIndex = Number(location.state?.videoIndex ?? 0);
+  const totalVideos = Number(location.state?.totalVideos ?? 1);
+  const videoTitle = String(location.state?.videoTitle || '');
   const [currentView, setCurrentView] = useState('quiz'); // 'quiz', 'review'
   const [instructionsVisible, setInstructionsVisible] = useState(true);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -290,6 +294,19 @@ function Quiz() {
     })();
   };
 
+  // After showing the review, auto-redirect back to Courses to the next chapter
+  useEffect(() => {
+    if (currentView === 'review') {
+      const idx = videoIndex;
+      const total = totalVideos;
+      const nextIdx = Math.min(idx + 1, Math.max(0, total - 1));
+      const timer = setTimeout(() => {
+        navigate(`/dashboard/courses/${fromCategory || 'nism'}`, { state: { selectVideoIndex: nextIdx } });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentView, navigate, fromCategory, videoIndex, totalVideos]);
+
   const handleQuestionNavigation = (index) => {
     setCurrentQuestionIndex(index);
   };
@@ -400,6 +417,14 @@ function Quiz() {
 
     return (
       <div className="quiz-page">
+        {!!videoTitle && (
+          <div className="quiz-card" style={{ marginBottom: 16 }}>
+            <div className="quiz-card-header">
+              <h1 className="quiz-card-title" style={{ marginBottom: 0 }}>Quiz for: {videoTitle}</h1>
+              <p className="quiz-card-subtitle" style={{ marginTop: 6 }}>Chapter {videoIndex + 1} of {totalVideos}</p>
+            </div>
+          </div>
+        )}
         {/* Timer Card */}
         <div className="quiz-timer-container">
           <div className="quiz-timer-card">
@@ -557,6 +582,9 @@ function Quiz() {
           {/* Score Summary */}
           <div className="review-summary">
             <h1 className="review-title">Quiz Completed!</h1>
+            {!!videoTitle && (
+              <p style={{ fontSize: '16px', color: '#475569', marginTop: 8 }}>For: <strong>{videoTitle}</strong></p>
+            )}
             <p style={{ fontSize: '18px', color: '#334155', marginBottom: '32px', textAlign: 'center' }}>
               Great job! Here's how you did:
             </p>
@@ -614,7 +642,13 @@ function Quiz() {
                 );
               })}
             </div>
-            
+            {/* Immediate continue action */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
+              <button className="btn btn--primary" onClick={() => navigate(`/dashboard/courses/${fromCategory || 'nism'}`, { state: { selectVideoIndex: Math.min(videoIndex + 1, Math.max(0, totalVideos - 1)) } })}>
+                Continue to next chapter
+              </button>
+            </div>
+
             {/* Go Back Button at Bottom Left */}
             <div className="review-back-button">
               <Link to={`/dashboard/courses/${fromCategory || 'nism'}`} className="btn btn--primary">

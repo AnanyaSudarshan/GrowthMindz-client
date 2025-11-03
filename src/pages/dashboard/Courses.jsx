@@ -31,6 +31,31 @@ function Courses() {
   const html5VideoRef = useRef(null);
   const [quizReady, setQuizReady] = useState(false);
 
+  const [enrolledMap, setEnrolledMap] = useState({});
+  const loadEnrolled = () => {
+    try { return JSON.parse(localStorage.getItem('gm:enrollments')) || {}; } catch { return {}; }
+  };
+  const saveEnrolled = (data) => {
+    try { localStorage.setItem('gm:enrollments', JSON.stringify(data)); } catch {}
+  };
+  useEffect(() => { setEnrolledMap(loadEnrolled()); }, []);
+  const enrollmentKey = (course) => `cat:${category}:id:${course?.id}`;
+  const isCourseEnrolled = (course) => !!enrolledMap[enrollmentKey(course)];
+  const handleEnrollOrLearn = (course) => {
+    if (!course || !course.id) return;
+    const key = enrollmentKey(course);
+    if (!enrolledMap[key]) {
+      const next = { ...enrolledMap, [key]: true };
+      setEnrolledMap(next);
+      saveEnrolled(next);
+    }
+    if (category === 'nism') {
+      setShowPlayer(true);
+    } else {
+      navigate('/dashboard/learning');
+    }
+  };
+
   const courseData = {
     nism: [
       { id: 1, title: "NISM Series: Chapter 1", desc: "Start your NISM learning with Chapter 1", duration: "", difficulty: "", price: "Free", rating: 0, videoUrl: "https://youtu.be/2ClP539pTzA", videos: [
@@ -356,7 +381,12 @@ function Courses() {
                 </div>
                 <div className="course-footer">
                   <span className="course-price">{course.price}</span>
-                  <button className="btn btn-primary">Enroll Now</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleEnrollOrLearn(course)}
+                  >
+                    {isCourseEnrolled(course) ? 'Learn' : 'Enroll Now'}
+                  </button>
                 </div>
               </div>
             </div>

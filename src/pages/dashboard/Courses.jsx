@@ -23,6 +23,7 @@ function Courses() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const ytPlayerRef = useRef(null);
@@ -88,6 +89,18 @@ function Courses() {
     saveProgress(data);
   };
 
+  // Persist NISM enrollment across visits
+  useEffect(() => {
+    try {
+      const enrolled = localStorage.getItem('gm:nism:enrolled');
+      if (enrolled === 'true') {
+        // User enrolled previously; show card with "Learn" by default
+        setIsEnrolled(true);
+        setShowPlayer(false);
+      }
+    } catch {}
+  }, []);
+
   // YouTube Iframe API loader (singleton)
   const loadYouTubeAPI = () => new Promise((resolve) => {
     if (window.YT && window.YT.Player) return resolve(window.YT);
@@ -114,7 +127,7 @@ function Courses() {
 
   // Setup YouTube player tracking when enrolled
   useEffect(() => {
-    if (!isEnrolled || !currentVideo?.url || !/youtu/.test(currentVideo.url)) return;
+    if (!isEnrolled || !showPlayer || !currentVideo?.url || !/youtu/.test(currentVideo.url)) return;
     let playerElId = isExpanded ? 'nismPlayerModal' : 'nismPlayer';
     let mounted = true;
     loadYouTubeAPI().then((YT) => {
@@ -157,7 +170,7 @@ function Courses() {
       if (ytIntervalRef.current) { clearInterval(ytIntervalRef.current); ytIntervalRef.current = null; }
       // do not destroy player explicitly; it will be recreated next render
     };
-  }, [isEnrolled, isExpanded, currentVideo?.url]);
+  }, [isEnrolled, showPlayer, isExpanded, currentVideo?.url]);
 
   return (
     <div className="courses-page">
@@ -180,7 +193,7 @@ function Courses() {
       <div className="courses-grid">
         {category === "nism" ? (
           <div className="course-card">
-            {isEnrolled ? (
+            {(isEnrolled && showPlayer) ? (
               <div className="course-content">
                 <h3 className="course-title">{currentVideo?.title || "NISM Series: Chapter 1"}</h3>
                 <div className="course-video" style={{ marginTop: 12 }}>
@@ -302,7 +315,20 @@ function Courses() {
 
                   <div className="course-footer" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
                     <span className="course-price">Free</span>
-                    <button className="btn btn-primary" onClick={() => setIsEnrolled(true)}>Enroll Now</button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        if (!isEnrolled) {
+                          try { localStorage.setItem('gm:nism:enrolled', 'true'); } catch {}
+                          setIsEnrolled(true);
+                          setShowPlayer(true); // first time, go straight to player
+                        } else {
+                          setShowPlayer(true); // subsequent times, "Learn" opens the player
+                        }
+                      }}
+                    >
+                      {isEnrolled ? 'Learn' : 'Enroll Now'}
+                    </button>
                   </div>
                 </div>
               </>

@@ -277,12 +277,50 @@ function Quiz() {
     // Submit to server for evaluation; fallback to local if it fails
     (async () => {
       try {
+        // Get user ID from localStorage
+        const userData = localStorage.getItem('user');
+        const user = userData ? JSON.parse(userData) : null;
+        const userId = user?.id || null;
+        
         const res = await axios.post('http://localhost:5000/api/quiz/submit', {
           answers,
           questions: quizData,
+          userId: userId
         });
+        // Store each answer individually via /api/quiz-answers as requested
+        try {
+          const submissionId = res?.data?.submissionId;
+          const details = res?.data?.details || [];
+          // Helper to call the per-answer endpoint
+          const submitAnswer = async (submissionId, questionId, selectedAnswer, isCorrect) => {
+            const response = await fetch('http://localhost:5000/api/quiz-answers', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                submission_id: submissionId,
+                question_id: questionId,
+                selected_answers: selectedAnswer,
+                is_correct: isCorrect
+              })
+            });
+            const data = await response.json();
+            console.log('Server response:', data);
+            return data;
+          };
+
+          if (submissionId && Array.isArray(details) && details.length > 0) {
+            // Fire requests sequentially to avoid FK timing issues
+            for (const d of details) {
+              // d.questionId comes from the server mapped to quiz_content.question_id
+              await submitAnswer(submissionId, d.questionId, d.selectedAnswer || 'N', Boolean(d.isCorrect));
+            }
+          }
+        } catch (perAnswerErr) {
+          console.error('Per-answer submission failed:', perAnswerErr);
+        }
         setServerResults(res.data);
       } catch (e) {
+        console.error('Quiz submission error:', e);
         setServerResults(null);
       } finally {
         setCurrentView('review');
@@ -549,7 +587,7 @@ function Quiz() {
   // Review View
   if (currentView === 'review') {
     const localResults = calculateResults();
-    const results = serverResults || localResults;
+    const results = serverResults?.results || localResults;
 
     return (
       <div className="quiz-page">
@@ -584,10 +622,11 @@ function Quiz() {
           <div className="review-questions">
             <h2 className="review-questions-title">Review</h2>
             <div>
-              {(serverResults?.details || quizData).map((item, index) => {
-                const q = serverResults?.details ? { id: item.id, question: item.question, options: (quizData.find(x => x.id === item.id)?.options) || [] , answer: item.correctAnswer } : item;
-                const userAnswer = serverResults?.details ? item.userAnswer : answers[q.id];
-                const isCorrect = serverResults?.details ? item.isCorrect : userAnswer === q.answer;
+              {quizData.map((q, index) => {
+                // Find answer details from server results or use local calculation
+                const answerDetail = serverResults?.details?.find(d => d.questionId === q.id);
+                const userAnswer = answers[q.id];
+                const isCorrect = answerDetail ? answerDetail.isCorrect : (userAnswer === q.answer);
 
                 return (
                   <div key={q.id} className="review-question-item">

@@ -45,7 +45,7 @@ function Courses() {
     if (!course || !course.id) return;
     const key = enrollmentKey(course);
     if (!enrolledMap[key]) {
-      const next = { ...enrolledMap, [key]: true };
+      const next = { ...enrolledMap, [key]: { updatedAt: Date.now() } };
       setEnrolledMap(next);
       saveEnrolled(next);
     }

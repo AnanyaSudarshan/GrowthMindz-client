@@ -3,120 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Quiz.css';
 
-// Sample quiz data
-const SAMPLE_QUESTIONS = [
-  { 
-    id: 1, 
-    question: "What does HTML stand for?", 
-    options: [
-      "Hyper Text Markup Language", 
-      "Home Tool Markup Language", 
-      "Hyperlinks and Text Markup Language",
-      "High Tech Modern Language"
-    ], 
-    answer: "Hyper Text Markup Language" 
-  },
-  { 
-    id: 2, 
-    question: "What is React primarily used for?", 
-    options: [
-      "Database management", 
-      "Building user interfaces", 
-      "Server-side rendering",
-      "Backend development"
-    ], 
-    answer: "Building user interfaces" 
-  },
-  { 
-    id: 3, 
-    question: "Which of the following is a CSS framework?", 
-    options: [
-      "Django", 
-      "Bootstrap", 
-      "Node.js",
-      "MongoDB"
-    ], 
-    answer: "Bootstrap" 
-  },
-  { 
-    id: 4, 
-    question: "What does API stand for?", 
-    options: [
-      "Automated Programming Interface", 
-      "Application Programming Interface", 
-      "Advanced Program Integration",
-      "Application Process Interaction"
-    ], 
-    answer: "Application Programming Interface" 
-  },
-  { 
-    id: 5, 
-    question: "Which method is used to add an element at the end of an array in JavaScript?", 
-    options: [
-      "push()", 
-      "pop()", 
-      "shift()",
-      "unshift()"
-    ], 
-    answer: "push()" 
-  },
-  { 
-    id: 6, 
-    question: "What is the purpose of useReducer in React?", 
-    options: [
-      "To manage complex state logic", 
-      "To handle API calls", 
-      "To style components",
-      "To render lists"
-    ], 
-    answer: "To manage complex state logic" 
-  },
-  { 
-    id: 7, 
-    question: "Which property is used to make a flex item take remaining space?", 
-    options: [
-      "flex-grow", 
-      "flex-shrink", 
-      "flex-basis",
-      "flex-direction"
-    ], 
-    answer: "flex-grow" 
-  },
-  { 
-    id: 8, 
-    question: "What does SQL stand for?", 
-    options: [
-      "Structured Query Language", 
-      "Sequential Query Language", 
-      "Simple Query Language",
-      "Standard Query Library"
-    ], 
-    answer: "Structured Query Language" 
-  },
-  { 
-    id: 9, 
-    question: "Which of the following is NOT a JavaScript data type?", 
-    options: [
-      "number", 
-      "string", 
-      "float",
-      "boolean"
-    ], 
-    answer: "float" 
-  },
-  { 
-    id: 10, 
-    question: "What is the virtual DOM in React?", 
-    options: [
-      "A real DOM element", 
-      "A JavaScript representation of the real DOM", 
-      "A database",
-      "A rendering engine"
-    ], 
-    answer: "A JavaScript representation of the real DOM" 
-  }
-];
-
 const QUIZ_TIME = 10 * 60; // 10 minutes in seconds
 
 function Quiz() {
@@ -133,7 +19,7 @@ function Quiz() {
   const [timeRemaining, setTimeRemaining] = useState(QUIZ_TIME);
   const [isQuizActive, setIsQuizActive] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
-  const [quizData, setQuizData] = useState(SAMPLE_QUESTIONS);
+  const [quizData, setQuizData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [serverResults, setServerResults] = useState(null);
@@ -158,27 +44,10 @@ function Quiz() {
     };
   }, [isQuizActive, timeRemaining]);
 
-  // Helper to ensure we always have exactly 10 questions
+  // Normalize without using any sample fallback (slice to at most 10)
   const normalizeQuestions = (arr) => {
-    const base = Array.isArray(arr) ? [...arr] : [];
-    const pool = SAMPLE_QUESTIONS;
-    // Remove any malformed entries
-    const cleaned = base.filter(q => q && q.id != null && q.question && Array.isArray(q.options) && q.options.length > 0 && q.answer);
-    // If fewer than 10, pad using SAMPLE_QUESTIONS (non-duplicating by question text when possible)
-    const seen = new Set(cleaned.map(q => q.question));
-    for (const q of pool) {
-      if (cleaned.length >= 10) break;
-      if (!seen.has(q.question)) {
-        cleaned.push(q);
-        seen.add(q.question);
-      }
-    }
-    // If still fewer than 10 (unlikely), repeat from pool
-    let i = 0;
-    while (cleaned.length < 10) {
-      cleaned.push(pool[i % pool.length]);
-      i++;
-    }
+    const cleaned = (Array.isArray(arr) ? arr : [])
+      .filter(q => q && q.id != null && q.question && Array.isArray(q.options) && q.options.length > 0);
     return cleaned.slice(0, 10);
   };
 
@@ -189,15 +58,17 @@ function Quiz() {
       try {
         setLoading(true);
         setError('');
-        const res = await axios.get('http://localhost:5000/api/quiz/questions');
+        // Fetch UI-ready questions from backend (defaults to qid=2 if not provided)
+        const res = await axios.get('http://localhost:5000/api/quiz/questions', { params: { qid: 2 } });
         if (!cancelled) {
-          const ten = normalizeQuestions(res.data);
+          const list = Array.isArray(res?.data) ? res.data : [];
+          const ten = normalizeQuestions(list);
           setQuizData(ten);
         }
       } catch (e) {
         if (!cancelled) {
-          setError('Unable to load quiz from server. Using sample questions.');
-          setQuizData(normalizeQuestions(SAMPLE_QUESTIONS));
+          setError('Unable to load quiz from server.');
+          setQuizData([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -289,39 +160,9 @@ function Quiz() {
         const res = await axios.post('http://localhost:5000/api/quiz/submit', {
           answers,
           questions: quizData,
-          userId: userId
+          userId: userId,
+          qid: 2 // Chapter-1 quiz
         });
-        // Store each answer individually via /api/quiz-answers as requested
-        try {
-          const submissionId = res?.data?.submissionId;
-          const details = res?.data?.details || [];
-          // Helper to call the per-answer endpoint
-          const submitAnswer = async (submissionId, questionId, selectedAnswer, isCorrect) => {
-            const response = await fetch('http://localhost:5000/api/quiz-answers', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                submission_id: submissionId,
-                question_id: questionId,
-                selected_answers: selectedAnswer,
-                is_correct: isCorrect
-              })
-            });
-            const data = await response.json();
-            console.log('Server response:', data);
-            return data;
-          };
-
-          if (submissionId && Array.isArray(details) && details.length > 0) {
-            // Fire requests sequentially to avoid FK timing issues
-            for (const d of details) {
-              // d.questionId comes from the server mapped to quiz_content.question_id
-              await submitAnswer(submissionId, d.questionId, d.selectedAnswer || 'N', Boolean(d.isCorrect));
-            }
-          }
-        } catch (perAnswerErr) {
-          console.error('Per-answer submission failed:', perAnswerErr);
-        }
         setServerResults(res.data);
       } catch (e) {
         console.error('Quiz submission error:', e);
@@ -332,18 +173,7 @@ function Quiz() {
     })();
   };
 
-  // After showing the review, auto-redirect back to Courses to the next chapter
-  useEffect(() => {
-    if (currentView === 'review') {
-      const idx = videoIndex;
-      const total = totalVideos;
-      const nextIdx = Math.min(idx + 1, Math.max(0, total - 1));
-      const timer = setTimeout(() => {
-        navigate(`/dashboard/courses/${fromCategory || 'nism'}`, { state: { selectVideoIndex: nextIdx } });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentView, navigate, fromCategory, videoIndex, totalVideos]);
+  // No auto-redirect: stay on review until user clicks Back to Courses
 
   const handleQuestionNavigation = (index) => {
     setCurrentQuestionIndex(index);
@@ -450,6 +280,29 @@ function Quiz() {
 
   // Quiz View (card-based, matches dashboard)
   if (currentView === 'quiz') {
+    if (loading) {
+      return (
+        <div className="quiz-page">
+          <div className="quiz-card">
+            <div className="quiz-loading">Loading questions...</div>
+          </div>
+        </div>
+      );
+    }
+    if (!quizData || quizData.length === 0) {
+      return (
+        <div className="quiz-page">
+          <div className="quiz-card">
+            <h2 className="quiz-card-title" style={{ textAlign: 'left', marginBottom: 16 }}>Quiz</h2>
+            {error ? (
+              <div className="quiz-error">{error}</div>
+            ) : (
+              <div className="quiz-error">No questions available.</div>
+            )}
+          </div>
+        </div>
+      );
+    }
     const currentQuestion = quizData[currentQuestionIndex];
     const totalQuestions = quizData.length;
 
@@ -626,6 +479,11 @@ function Quiz() {
             <p style={{ fontSize: '18px', color: '#334155', marginBottom: '32px', textAlign: 'center' }}>
               Great job! Here's how you did:
             </p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+              <button className="btn btn--primary" onClick={() => navigate(`/dashboard/courses/${fromCategory || 'nism'}`)}>
+                Back to Courses
+              </button>
+            </div>
             <div className="review-stats-grid">
               <div className="review-stat-card">
                 <div className="review-stat-value">{results.total}</div>
@@ -681,12 +539,7 @@ function Quiz() {
                 );
               })}
             </div>
-            {/* Immediate continue action */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16 }}>
-              <button className="btn btn--primary" onClick={() => navigate(`/dashboard/courses/${fromCategory || 'nism'}`, { state: { selectVideoIndex: Math.min(videoIndex + 1, Math.max(0, totalVideos - 1)) } })}>
-                Continue to next chapter
-              </button>
-            </div>
+            {/* No auto-continue; user stays until clicking Back */}
 
             {/* Go Back Button at Bottom Left */}
             <div className="review-back-button">

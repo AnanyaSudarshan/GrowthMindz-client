@@ -10,9 +10,47 @@
 .about h2 { font-size: 32px; margin-bottom: 12px; }
 .about p {
   font-size: 18px;
-  color: #334155;
+  color: #000000;
   line-height: 1.75;
 }
+
+.about__list {
+  margin-top: 16px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.about__item {
+  margin: 8px 0;
+  font-size: 18px; /* match paragraph */
+  color: inherit;  /* match paragraph */
+  line-height: 1.75; /* match paragraph */
+}
+
+.about__term {
+  color: #000000; /* black as requested */
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.about__desc {
+  color: inherit; /* match previous text */
+  font-style: normal; /* match previous text */
+  font-weight: 700; /* bold */
+}
+
+/* Minimalist styling */
+.about { background: transparent; }
+.about .container {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-left: 4px solid #000; /* left accent */
+  padding-left: 20px;
+}
+.about h2 { margin-bottom: 8px; letter-spacing: 0.2px; }
+.about__item + .about__item { margin-top: 10px; }
 
 @media (min-width: 640px) {
   .about h2 { font-size: 40px; }

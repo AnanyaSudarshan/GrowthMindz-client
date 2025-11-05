@@ -247,7 +247,7 @@ function Signup() {
                 onChange={handleChange}
                 disabled={isLoading}
               />
-              <span className="checkmark"></span>I agree to the{" "}
+              I agree to the{" "}
               <Link to="/terms" className="terms-link">
                 Terms of Service
               </Link>{" "}

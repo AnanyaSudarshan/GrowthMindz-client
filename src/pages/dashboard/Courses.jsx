@@ -36,6 +36,19 @@ function Courses() {
   const [searchNoMatch, setSearchNoMatch] = useState(false);
 
   const [enrolledMap, setEnrolledMap] = useState({});
+  // Helper to call backend and enroll
+  const enrollBackend = async ({ uid, courses_opted, cid }) => {
+    const res = await fetch('http://localhost:5000/api/enroll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, courses_opted, cid })
+    });
+    if (!res.ok) {
+      const err = await res.text().catch(()=>'');
+      throw new Error(err || 'Failed to enroll');
+    }
+    return res.json();
+  };
   const loadEnrolled = () => {
     try { return JSON.parse(localStorage.getItem('gm:enrollments')) || {}; } catch { return {}; }
   };
@@ -45,10 +58,17 @@ function Courses() {
   useEffect(() => { setEnrolledMap(loadEnrolled()); }, []);
   const enrollmentKey = (course) => `cat:${category}:id:${course?.id}`;
   const isCourseEnrolled = (course) => !!enrolledMap[enrollmentKey(course)];
-  const handleEnrollOrLearn = (course) => {
+  const handleEnrollOrLearn = async (course) => {
     if (!course || !course.id) return;
     const key = enrollmentKey(course);
     if (!enrolledMap[key]) {
+      try {
+        const user = (()=>{ try{ return JSON.parse(localStorage.getItem('user')); }catch{return null;} })();
+        const uid = user?.id;
+        if (uid) {
+          await enrollBackend({ uid, courses_opted: category, cid: course.id });
+        }
+      } catch {}
       const next = { ...enrolledMap, [key]: { updatedAt: Date.now() } };
       setEnrolledMap(next);
       saveEnrolled(next);
@@ -420,8 +440,17 @@ function Courses() {
                     <span className="course-price">Free</span>
                     <button
                       className="btn btn-primary"
-                      onClick={() => {
+                      onClick={async () => {
                         if (!isEnrolled) {
+                          try {
+                            const user = (()=>{ try{ return JSON.parse(localStorage.getItem('user')); }catch{return null;} })();
+                            const uid = user?.id;
+                            if (uid) {
+                              // For NISM, assume course id 1 (or first video index + 1 if available)
+                              const cid = 1;
+                              await enrollBackend({ uid, courses_opted: 'nism', cid });
+                            }
+                          } catch {}
                           try { localStorage.setItem('gm:nism:enrolled', 'true'); } catch {}
                           setIsEnrolled(true);
                           setShowPlayer(true); // first time, go straight to player

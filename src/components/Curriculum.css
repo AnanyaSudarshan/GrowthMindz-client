@@ -1,5 +1,8 @@
 .curriculum { background: #f8fafc; }
 
+/* Tighten vertical gap below About by reducing Curriculum top padding */
+.section.curriculum { padding-top: 8px; }
+
 .curriculum h2 { font-size: 32px; margin-bottom: 16px; }
 
 .topics {
@@ -22,6 +25,7 @@
 
 @media (min-width: 640px) {
   .curriculum h2 { font-size: 40px; }
+  .section.curriculum { padding-top: 12px; }
   .topics { grid-template-columns: repeat(2, 1fr); }
 }
 

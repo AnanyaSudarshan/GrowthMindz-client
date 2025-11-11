@@ -7,12 +7,18 @@
   margin: 0 auto;
 }
 
+/* Reduce bottom gap specifically for the About section */
+.section.about { padding-bottom: 0; }
+
 .about h2 { font-size: 32px; margin-bottom: 12px; }
 .about p {
-  font-size: 18px;
+  font-size: 20px;
   color: #000000;
   line-height: 1.75;
 }
+
+/* Remove extra space after the last paragraph */
+.about p:last-child { margin-bottom: 0; }
 
 .about__list {
   margin-top: 16px;
@@ -25,6 +31,9 @@
   font-size: 18px; /* match paragraph */
   color: inherit;  /* match paragraph */
   line-height: 1.75; /* match paragraph */
+  text-align: inherit; /* match paragraph alignment (e.g., justified) */
+  position: relative; /* for decorative bullet */
+  padding-left: 18px; /* space for decorative bullet */
 }
 
 .about__term {
@@ -36,7 +45,7 @@
 .about__desc {
   color: inherit; /* match previous text */
   font-style: normal; /* match previous text */
-  font-weight: 700; /* bold */
+  font-weight: 400; /* normal weight to match paragraph */
 }
 
 /* Minimalist styling */
@@ -46,16 +55,48 @@
   padding: 0;
   border-radius: 0;
   box-shadow: none;
-  border-left: 4px solid #000; /* left accent */
   padding-left: 20px;
+  margin-bottom: 0; /* tighten space below about content */
 }
-.about h2 { margin-bottom: 8px; letter-spacing: 0.2px; }
+.about h2 { margin-bottom: 8px; letter-spacing: 0.2px; font-size: 36px; }
 .about__item + .about__item { margin-top: 10px; }
 
-@media (min-width: 640px) {
-  .about h2 { font-size: 40px; }
-  .about p { font-size: 19px; }
+/* Attractive highlight block for Vision/Mission */
+.about__highlights {
+  background: #f9fafb; /* subtle contrast */
+  border: 1px solid #e5e7eb; /* light border */
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px; /* space before heading */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
+
+.about__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.85em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #111111; /* subtle dark bullet */
+  opacity: 0.5;
+}
+
+@media (min-width: 640px) {
+  .about h2 { font-size: 48px; }
+  .about p { font-size: 22px; }
+  .section.about { padding-bottom: 0; }
+}
+
+/* Lower the top padding of sections that come after About (not necessarily immediate) */
+#about ~ .section { padding-top: 8px; }
+@media (min-width: 640px) {
+  #about ~ .section { padding-top: 12px; }
+}
+
+/* Ensure following section containers don't add extra top margin */
+#about ~ .section .container { margin-top: 0; }
 
 
 
